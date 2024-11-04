@@ -27,15 +27,33 @@ Stationary scenarios and Mixed Motion scenarios. Three different cameras.
 CNN model. Feature extraction(conv layers) - HR prediction - Filtering.
 Color signals as inputs, heart rate(40-125bpm integer) as labels.Regression and classification tasks. Squared error for regression and cross entropy for classification. 
 
+# 4. A deep learning approach for remote heart rate estimation
 
+## Innovation:
+Proposed a method based on the Long Short Term Memory (LSTM) deep neural network.
+While maintaining the accuracy comparable to ICA and POS algorithms, the LSTM network works well also beyond the visible spectrum, e.g., with infrared lighting when the color signal is not available and is easily adaptable to telemedicine applications.
+Also works in grayscale.
 
+## Process
+ROI selection - raw color signal extraction - VPG signal extraction (G, ICA, POS, ExG) - VPG signal postprocessing (band-pass filtering) - pulse rate estimation.
 
+# 5. Chaos in Motion: Unveiling Robustness in Remote Heart Rate Measurement through Brain-Inspired Skin Tracking
 
+## Innovation
+Apply chaos theory to computer vision.
 
+Design a robust motion-aware remote heart rate measurement framework, which can accurately
+identify skin ROI and be applied to body parts other than the face, making it applicable for special patients and addressing privacy protection concerns.
 
+ROI extraction: continuous coupled neural network (CCNN).
 
+Filter G-channel, conduct time-frequency analysis. 
 
+## non-facial experiments
 
+In addressing subject privacy, we conducted remote heart rate experiments on six non-facial
+body parts, reducing individual identifiable information. These parts included the palm, back of the hand, forearm, upper arm, back, and sole.
 
+limited skin color
 
-
+# 6. Deep Learning Methods for Remote Heart Rate Measurement: A Review and Future Research Agenda
