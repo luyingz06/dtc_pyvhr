@@ -57,3 +57,20 @@ body parts, reducing individual identifiable information. These parts included t
 limited skin color
 
 # 6. Deep Learning Methods for Remote Heart Rate Measurement: A Review and Future Research Agenda
+
+Discuss advances of DL-based methods.
+
+rPPG methods utilize signal processing techniques to separate the specular reflections and extract the diffuse reflections associated with the underlying signals of interest.
+
+2D CNN - 3D CNN - 2D CNN + RNN - NAS - Attention
+
+More importantly, new methods should provide insight into how these challenges are handled from a technical and biophysical perspective, rather than just evaluating their performance on a dataset that contains the influencing factors.
+
+Other challenges, such as skin-tone variations, multiple persons detection, and long distance estimations, need to be overcome.
+
+# 7. More Reliable Remote Heart Rate Measurement by Signal Quality Indexes
+
+
+
+
+
