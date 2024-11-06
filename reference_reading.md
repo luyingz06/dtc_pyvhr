@@ -70,7 +70,16 @@ Other challenges, such as skin-tone variations, multiple persons detection, and 
 
 # 7. More Reliable Remote Heart Rate Measurement by Signal Quality Indexes
 
+Largest improvements were achieved in the green channel resulting in 80% accuracy and overall highest accuracy of 84% was reached in the hue channel.
 
+# 8. Non-contact estimation of heart rate and oxygen saturation using ambient light
 
+Digital color video recordings of human face. Strong correlations between SpO2 estimations and the commercial oximeter readings. 
 
+Accuracy 0.9663.
 
+# 9. Optimal color channel combination across skin tones for remote heart rate measurement in camera-based photoplethysmography
+
+Two criterion: signal-to-noise ratio(SNR) and heart rate measurement accuracy (ACC). 
+
+Identify beneficial color combinations for camera-based HR measurement across all skin tones. 
