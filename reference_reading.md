@@ -83,3 +83,24 @@ Accuracy 0.9663.
 Two criterion: signal-to-noise ratio(SNR) and heart rate measurement accuracy (ACC). 
 
 Identify beneficial color combinations for camera-based HR measurement across all skin tones. 
+
+## Study 1: Comparison of heart rate measurement accuracy in multiple color channels and regions of interest
+
+Seven ROIs, 6 skin tones, eight color spaces.
+
+## Study 2: Cube grid search for optimal static linear combination in RGB color space
+
+examin linear RGB combinations regarding their suitability for cbPPG.
+
+## Study 3: Skin tone investigation and hemispherical surface grid search for optimal static linear combination in RGB color space
+
+# 10. Remote plethysmographic imaging using ambient light
+
+Discussion: We have shown that movies of the human face, recorded with a simple digital camera and ambient light as the only source of illumination, contain robust reflectance PPG signals.
+
+# 11. Remote Heart Rate Measurement From Face Videos Under Realistic Situations
+
+We propose a framework which utilizes face tracking and Normalized Least Mean Square adaptive
+filtering methods to counter their influences. We test our framework on a large difficult and public database MAHNOB-HCI and demonstrate that our method substantially outperforms all previous methods.
+
+Employ DRMF to find the precise face ROI and use tracking to address the problem caused by rigid head movement; second, NLMS adaptive filter is employed to rectify the interferences of illumination variations; third, signal segments with big SD values are discarded in order to reduce the noise caused by sudden non-rigid movements.
