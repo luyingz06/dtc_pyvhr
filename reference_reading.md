@@ -104,3 +104,14 @@ We propose a framework which utilizes face tracking and Normalized Least Mean Sq
 filtering methods to counter their influences. We test our framework on a large difficult and public database MAHNOB-HCI and demonstrate that our method substantially outperforms all previous methods.
 
 Employ DRMF to find the precise face ROI and use tracking to address the problem caused by rigid head movement; second, NLMS adaptive filter is employed to rectify the interferences of illumination variations; third, signal segments with big SD values are discarded in order to reduce the noise caused by sudden non-rigid movements.
+
+# 12. Robust heart rate from fitness videos
+
+We decompose the RGBsignals into multiple orthogonal frequency bands for sub-band pulse extraction.
+
+The SB method proposed in this paper is an independent algorithmic component in an rPPG monitoring-system.
+
+# 13. Visual Heart Rate Estimation from Facial Video Based on CNN
+
+We proposed an End-to-end deep neural network method for this task. The network is consisted of 2D convolutional (Conv2D) and LSTM (long short-term memory) operations. The Conv2D operation extract spatial feature and LSTM capture temporal information.
+
