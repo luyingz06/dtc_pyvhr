@@ -115,3 +115,21 @@ The SB method proposed in this paper is an independent algorithmic component in 
 
 We proposed an End-to-end deep neural network method for this task. The network is consisted of 2D convolutional (Conv2D) and LSTM (long short-term memory) operations. The Conv2D operation extract spatial feature and LSTM capture temporal information.
 
+# 14. MTTS-CAN: Multi-Task Temporal Shift Attention Networks for On-Device Contactless Vitals Measurement
+
+Trained only on PURE, and tested on UBFC.
+It leverages a novel multi-task temporal shift convolutional attention network (MTTS-CAN) and enables real-time cardiovascular and respiratory measurements on mobile platforms. Enabled real-time applications and substantial (20%-50%) reducions in error. 
+
+Therefore, we propose inserting an attention module in TSM to minimize the negative effects introduced by tensor shifting as well as to enable the network to focus on the target signals.
+
+We trained our proposed MTTS-CAN architectures using the Adadelta optimizer [37] with a learning rate of 1.0, batch size of 32, kernel size of 3×3, pooling size of 2×2, and dropout rates of 0.25 and 0.5.
+
+# 15. rPPG-Toolbox: Deep Remote PPG Toolbox
+
+We have provided pre-processing code for UBFC-rPPG [22], PURE [23] SCAMPS [24], MMPD [25], BP4D+ [26], and UBFC-Phys [27]. Each of these datasets encompasses a diverse array of real-world conditions, capturing variations in factors such as motion, lighting, skin tones/types, and backgrounds, thus presenting robust challenges for any signal processing and machine learning algorithm.
+
+-----------------------------------------
+(Open datasets with facial information: UBFC-rPPG, PURE, SCAMPS, MMPD, BP4D+, and UBFC-Phys)
+(Also non-facial videos on humans: Human3.6M, NTU RGB+D, MPII Human Pose Dataset, ActivityNet, UCF101 but mostly used for pose detection, action analysis and such)
+(For triage purpose: MIMIC-III, PhysioNet)
+
