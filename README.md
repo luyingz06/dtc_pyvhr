@@ -65,5 +65,5 @@ Train new deep neural network models (Further schedule).
 ## Visualization
 
 This is the visualization on 2024_10_18 data:
+![Figure_1](https://github.com/user-attachments/assets/5219f833-4eb3-4d9f-b8ab-de876a68bcba)
 
-![Figure_1](https://github.com/user-attachments/assets/d28f6757-0ce1-4b57-9917-c05a405cbda4)
