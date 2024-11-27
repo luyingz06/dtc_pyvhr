@@ -54,6 +54,7 @@ rostopic pub /jackal_teleop/trigger std_msgs/UInt8 "data: 1"
 rostopic echo /heart_rate/model
 ```
 
+
 ## Todo
 
 Test on existing data using pyvhr pipeline and give estimated results vs ground truth (Nov. 20th - Nov. 24th).
@@ -65,6 +66,10 @@ Train new deep neural network models (Further schedule).
 ## Visualization
 
 This is the visualization on 2024_10_18, 2024_10_24, and part of 2024_10_29 data:
+![Figure_1](https://github.com/user-attachments/assets/5537b923-82dc-466d-8f88-f3a8a6682cb4)
 
-![Figure_1](https://github.com/user-attachments/assets/b7dc8b5a-0125-407c-bb58-0f76c7465119)
+And I also plotted the high heart rate (>85bpm) below:
 
+![Figure_2](https://github.com/user-attachments/assets/e46cec89-5dce-4998-b79f-470a98caa942)
+
+We can see that in general, the pyVHR shows a high variance and the performance is not very stable, while MTTS_CAN is more stable but it fails to detetct high heart rate.
