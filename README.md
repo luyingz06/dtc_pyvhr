@@ -61,7 +61,7 @@ rostopic echo /heart_rate/model
 
 √ Test MTTS_CAN without preprocessing on the existing data and get comparison plots (Nov. 24th - Nov. 28th).
 
-Evaluate MTTS_CAN or other deep learning models after the image preprocess (skin extraction) and get comparison results. (Dec. 2nd - Dec. 7th)
+Evaluate and train on PhysFormer network using existing data, build pipeline in Docker. (Dec. 2nd - Dec. 7th)
 
 Train on new deep neural network models with image preprocess (Dec. 7th - Dec. 13th).
 
