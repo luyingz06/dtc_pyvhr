@@ -74,4 +74,4 @@ And I also plotted the high heart rate (>85bpm) below:
 
 ![Figure_2](https://github.com/user-attachments/assets/e46cec89-5dce-4998-b79f-470a98caa942)
 
-We can see that in general, the pyVHR shows a high variance and the performance is not very stable, while MTTS_CAN is more stable but it fails to detetct high heart rate.
+We can see that in general, the pyVHR shows a high variance and the performance is not very stable, while MTTS_CAN is more stable but it fails to detect high heart rate.
