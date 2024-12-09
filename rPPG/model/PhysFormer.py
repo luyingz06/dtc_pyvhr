@@ -283,6 +283,9 @@ class ViT_ST_ST_Compact3_TDC_gra_sharp(nn.Module):
     def forward(self, x, gra_sharp):
 
         # b is batch number, c channels, t frame, fh frame height, and fw frame width
+        x = x.view(-1, 300, 3, 224, 224)
+        x = x.permute(0, 2, 1, 3, 4)
+        
         b, c, t, fh, fw = x.shape
         
         x = self.Stem0(x)

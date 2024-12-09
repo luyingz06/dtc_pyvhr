@@ -15,11 +15,11 @@ import numpy as np
 import math
 import torch
 import torch.optim as optim
-from evaluation.metrics import calculate_metrics
-from neural_methods.loss.PhysNetNegPearsonLoss import Neg_Pearson
-from neural_methods.loss.PhysFormerLossComputer import TorchLossComputer
-from neural_methods.model.PhysFormer import ViT_ST_ST_Compact3_TDC_gra_sharp
-from neural_methods.trainer.BaseTrainer import BaseTrainer
+# from evaluation.metrics import calculate_metrics
+from loss.PhysNetNegPearsonLoss import Neg_Pearson
+from loss.PhysFormerLossComputer import TorchLossComputer
+from model.PhysFormer import ViT_ST_ST_Compact3_TDC_gra_sharp
+from train.BaseTrainer import BaseTrainer
 from tqdm import tqdm
 from scipy.signal import welch
 import pandas as pd
@@ -29,49 +29,49 @@ class PhysFormerTrainer(BaseTrainer):
     def __init__(self, config, data_loader):
         """Inits parameters from args and the writer for TensorboardX."""
         super().__init__()
-        self.device = torch.device(config.DEVICE)
-        self.max_epoch_num = config.TRAIN.EPOCHS
-        self.model_dir = config.MODEL.MODEL_DIR
-        self.dropout_rate = config.MODEL.DROP_RATE
-        self.patch_size = config.MODEL.PHYSFORMER.PATCH_SIZE
-        self.dim = config.MODEL.PHYSFORMER.DIM
-        self.ff_dim = config.MODEL.PHYSFORMER.FF_DIM
-        self.num_heads = config.MODEL.PHYSFORMER.NUM_HEADS
-        self.num_layers = config.MODEL.PHYSFORMER.NUM_LAYERS
-        self.theta = config.MODEL.PHYSFORMER.THETA
-        self.model_file_name = config.TRAIN.MODEL_FILE_NAME
-        self.batch_size = config.TRAIN.BATCH_SIZE
-        self.num_of_gpu = config.NUM_OF_GPU_TRAIN
-        self.chunk_len = config.TRAIN.DATA.PREPROCESS.CHUNK_LENGTH
-        self.frame_rate = config.TRAIN.DATA.FS
+        self.device = torch.device(config['DEVICE'])
+        self.max_epoch_num = config['TRAIN']['EPOCHS']
+        self.model_dir = config['MODEL']['MODEL_DIR']
+        self.dropout_rate = config['MODEL']['DROP_RATE']
+        self.patch_size = config['MODEL']['PHYSFORMER']['PATCH_SIZE']
+        self.dim = config['MODEL']['PHYSFORMER']['DIM']
+        self.ff_dim = config['MODEL']['PHYSFORMER']['FF_DIM']
+        self.num_heads = config['MODEL']['PHYSFORMER']['NUM_HEADS']
+        self.num_layers = config['MODEL']['PHYSFORMER']['NUM_LAYERS']
+        self.theta = config['MODEL']['PHYSFORMER']['THETA']
+        self.model_file_name = config['TRAIN']['MODEL_FILE_NAME']
+        self.batch_size = config['TRAIN']['BATCH_SIZE']
+        self.num_of_gpu = config['NUM_OF_GPU_TRAIN']
+        self.chunk_len = config['TRAIN']['DATA']['PREPROCESS']['CHUNK_LENGTH']
+        self.frame_rate = config['TRAIN']['DATA']['PREPROCESS']['FS']
         self.config = config 
         self.min_valid_loss = None
         self.best_epoch = 0
-        self.hr_data = pd.read_csv('DTC.csv', usecols=['Name', 'Average Heart Rate']).set_index('Name')['Average Heart Rate'].to_dict()
+        # self.hr_data = pd.read_csv('DTC.csv', usecols=['Name', 'Average Heart Rate']).set_index('Name')['Average Heart Rate'].to_dict()
 
-        if config.TOOLBOX_MODE == "train_and_test":
+        if config['TRAIN']['TOOLBOX_MODE'] == "train_and_test":
             self.model = ViT_ST_ST_Compact3_TDC_gra_sharp(
-                image_size=(self.chunk_len,config.TRAIN.DATA.PREPROCESS.RESIZE.H,config.TRAIN.DATA.PREPROCESS.RESIZE.W), 
+                image_size=(self.chunk_len,config['TRAIN']['DATA']['PREPROCESS']['RESIZE']['H'],config['TRAIN']['DATA']['PREPROCESS']['RESIZE']['W']), 
                 patches=(self.patch_size,) * 3, dim=self.dim, ff_dim=self.ff_dim, num_heads=self.num_heads, num_layers=self.num_layers, 
                 dropout_rate=self.dropout_rate, theta=self.theta).to(self.device)
-            self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config.NUM_OF_GPU_TRAIN)))
+            self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config['NUM_OF_GPU_TRAIN'])))
 
             self.num_train_batches = len(data_loader["train"])
             self.criterion_reg = torch.nn.MSELoss()
             self.criterion_L1loss = torch.nn.L1Loss()
             self.criterion_class = torch.nn.CrossEntropyLoss()
             self.criterion_Pearson = Neg_Pearson()
-            self.optimizer = optim.Adam(self.model.parameters(), lr=config.TRAIN.LR, weight_decay=0.00005)
+            self.optimizer = optim.Adam(self.model.parameters(), lr=config['TRAIN']['LR'], weight_decay=0.00005)
             # TODO: In both the PhysFormer repo's training example and other implementations of a PhysFormer trainer, 
             # a step_size that doesn't end up changing the LR always seems to be used. This seems to defeat the point
             # of using StepLR in the first place. Consider investigating and using another approach (e.g., OneCycleLR).
             self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=50, gamma=0.5)
-        elif config.TOOLBOX_MODE == "only_test":
+        elif config['TRAIN']['TOOLBOX_MODE'] == "only_test":
             self.model = ViT_ST_ST_Compact3_TDC_gra_sharp(
-                image_size=(self.chunk_len,config.TRAIN.DATA.PREPROCESS.RESIZE.H,config.TRAIN.DATA.PREPROCESS.RESIZE.W), 
+                image_size=(self.chunk_len,config['TRAIN']['DATA']['PREPROCESS']['RESIZE']['H'],config['TRAIN']['DATA']['PREPROCESS']['RESIZE']['W']), 
                 patches=(self.patch_size,) * 3, dim=self.dim, ff_dim=self.ff_dim, num_heads=self.num_heads, num_layers=self.num_layers, 
                 dropout_rate=self.dropout_rate, theta=self.theta).to(self.device)
-            self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config.NUM_OF_GPU_TRAIN)))
+            self.model = torch.nn.DataParallel(self.model, device_ids=list(range(config['NUM_OF_GPU_TRAIN'])))
         else:
             raise ValueError("Physformer trainer initialized in incorrect toolbox mode!")
 
@@ -103,8 +103,10 @@ class PhysFormerTrainer(BaseTrainer):
             self.model.train()
             tbar = tqdm(data_loader["train"], ncols=80)
             for idx, batch in enumerate(tbar):
-                hr = torch.tensor([float(self.get_ground_truth_hr(name)) for name in batch[1]]).float().to(self.device)
-                data = batch[0].float().to(self.device)
+                data = batch[0].float().to(self.device)  # Video data (move to device)
+                hr = batch[1].float().to(self.device)
+                # Reshape data to [batch_size * frames, channels, height, width]
+                data = data.view(-1, 3, 224, 224)
 
                 self.optimizer.zero_grad()
 
@@ -202,59 +204,59 @@ class PhysFormerTrainer(BaseTrainer):
             RMSE = np.mean([(i-j)**2 for i, j in hrs])**0.5
         return RMSE
 
-    def test(self, data_loader):
-        """ Runs the model on test sets."""
-        if data_loader["test"] is None:
-            raise ValueError("No data for test")
+    # def test(self, data_loader):
+    #     """ Runs the model on test sets."""
+    #     if data_loader["test"] is None:
+    #         raise ValueError("No data for test")
         
-        print('')
-        print("===Testing===")
-        predictions = dict()
-        labels = dict()
+    #     print('')
+    #     print("===Testing===")
+    #     predictions = dict()
+    #     labels = dict()
 
-        if self.config.TOOLBOX_MODE == "only_test":
-            if not os.path.exists(self.config.INFERENCE.MODEL_PATH):
-                raise ValueError("Inference model path error! Please check INFERENCE.MODEL_PATH in your yaml.")
-            self.model.load_state_dict(torch.load(self.config.INFERENCE.MODEL_PATH))
-            print("Testing uses pretrained model!")
-            print(self.config.INFERENCE.MODEL_PATH)
-        else:
-            if self.config.TEST.USE_LAST_EPOCH:
-                last_epoch_model_path = os.path.join(
-                self.model_dir, self.model_file_name + '_Epoch' + str(self.max_epoch_num - 1) + '.pth')
-                print("Testing uses last epoch as non-pretrained model!")
-                print(last_epoch_model_path)
-                self.model.load_state_dict(torch.load(last_epoch_model_path))
-            else:
-                best_model_path = os.path.join(
-                    self.model_dir, self.model_file_name + '_Epoch' + str(self.best_epoch) + '.pth')
-                print("Testing uses best epoch selected using model selection as non-pretrained model!")
-                print(best_model_path)
-                self.model.load_state_dict(torch.load(best_model_path))
+    #     if self.config.TOOLBOX_MODE == "only_test":
+    #         if not os.path.exists(self.config.INFERENCE.MODEL_PATH):
+    #             raise ValueError("Inference model path error! Please check INFERENCE.MODEL_PATH in your yaml.")
+    #         self.model.load_state_dict(torch.load(self.config.INFERENCE.MODEL_PATH))
+    #         print("Testing uses pretrained model!")
+    #         print(self.config.INFERENCE.MODEL_PATH)
+    #     else:
+    #         if self.config.TEST.USE_LAST_EPOCH:
+    #             last_epoch_model_path = os.path.join(
+    #             self.model_dir, self.model_file_name + '_Epoch' + str(self.max_epoch_num - 1) + '.pth')
+    #             print("Testing uses last epoch as non-pretrained model!")
+    #             print(last_epoch_model_path)
+    #             self.model.load_state_dict(torch.load(last_epoch_model_path))
+    #         else:
+    #             best_model_path = os.path.join(
+    #                 self.model_dir, self.model_file_name + '_Epoch' + str(self.best_epoch) + '.pth')
+    #             print("Testing uses best epoch selected using model selection as non-pretrained model!")
+    #             print(best_model_path)
+    #             self.model.load_state_dict(torch.load(best_model_path))
 
-        self.model = self.model.to(self.config.DEVICE)
-        self.model.eval()
-        print("Running model evaluation on the testing dataset!")
-        with torch.no_grad():
-            for _, test_batch in enumerate(tqdm(data_loader["test"], ncols=80)):
-                batch_size = test_batch[0].shape[0]
-                data, label = test_batch[0].to(
-                    self.config.DEVICE), test_batch[1].to(self.config.DEVICE)
-                gra_sharp = 2.0
-                pred_ppg_test, _, _, _ = self.model(data, gra_sharp)
-                for idx in range(batch_size):
-                    subj_index = test_batch[2][idx]
-                    sort_index = int(test_batch[3][idx])
-                    if subj_index not in predictions.keys():
-                        predictions[subj_index] = dict()
-                        labels[subj_index] = dict()
-                    predictions[subj_index][sort_index] = pred_ppg_test[idx]
-                    labels[subj_index][sort_index] = label[idx]
+    #     self.model = self.model.to(self.config.DEVICE)
+    #     self.model.eval()
+    #     print("Running model evaluation on the testing dataset!")
+    #     with torch.no_grad():
+    #         for _, test_batch in enumerate(tqdm(data_loader["test"], ncols=80)):
+    #             batch_size = test_batch[0].shape[0]
+    #             data, label = test_batch[0].to(
+    #                 self.config.DEVICE), test_batch[1].to(self.config.DEVICE)
+    #             gra_sharp = 2.0
+    #             pred_ppg_test, _, _, _ = self.model(data, gra_sharp)
+    #             for idx in range(batch_size):
+    #                 subj_index = test_batch[2][idx]
+    #                 sort_index = int(test_batch[3][idx])
+    #                 if subj_index not in predictions.keys():
+    #                     predictions[subj_index] = dict()
+    #                     labels[subj_index] = dict()
+    #                 predictions[subj_index][sort_index] = pred_ppg_test[idx]
+    #                 labels[subj_index][sort_index] = label[idx]
 
-        print('')
-        calculate_metrics(predictions, labels, self.config)
-        if self.config.TEST.OUTPUT_SAVE_DIR: # saving test outputs
-            self.save_test_outputs(predictions, labels, self.config)
+    #     print('')
+    #     calculate_metrics(predictions, labels, self.config)
+    #     if self.config.TEST.OUTPUT_SAVE_DIR: # saving test outputs
+    #         self.save_test_outputs(predictions, labels, self.config)
 
     def save_model(self, index):
         if not os.path.exists(self.model_dir):
@@ -268,6 +270,3 @@ class PhysFormerTrainer(BaseTrainer):
     # def get_hr(self, y, sr=30, min=30, max=180):
     #     p, q = welch(y, sr, nfft=1e5/sr, nperseg=np.min((len(y)-1, 256)))
     #     return p[(p>min/60)&(p<max/60)][np.argmax(q[(p>min/60)&(p<max/60)])]*60
-
-    def get_hr_gt(self, name):
-        return self.hr_data[name]
