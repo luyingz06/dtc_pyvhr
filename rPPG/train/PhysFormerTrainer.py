@@ -22,6 +22,7 @@ from neural_methods.model.PhysFormer import ViT_ST_ST_Compact3_TDC_gra_sharp
 from neural_methods.trainer.BaseTrainer import BaseTrainer
 from tqdm import tqdm
 from scipy.signal import welch
+import pandas as pd
 
 class PhysFormerTrainer(BaseTrainer):
 
@@ -46,6 +47,7 @@ class PhysFormerTrainer(BaseTrainer):
         self.config = config 
         self.min_valid_loss = None
         self.best_epoch = 0
+        self.hr_data = pd.read_csv('DTC.csv', usecols=['Name', 'Average Heart Rate']).set_index('Name')['Average Heart Rate'].to_dict()
 
         if config.TOOLBOX_MODE == "train_and_test":
             self.model = ViT_ST_ST_Compact3_TDC_gra_sharp(
@@ -101,15 +103,15 @@ class PhysFormerTrainer(BaseTrainer):
             self.model.train()
             tbar = tqdm(data_loader["train"], ncols=80)
             for idx, batch in enumerate(tbar):
-                hr = torch.tensor([self.get_hr(i) for i in batch[1]]).float().to(self.device)
-                data, label = batch[0].float().to(self.device), batch[1].float().to(self.device)
+                hr = torch.tensor([float(self.get_ground_truth_hr(name)) for name in batch[1]]).float().to(self.device)
+                data = batch[0].float().to(self.device)
 
                 self.optimizer.zero_grad()
 
                 gra_sharp = 2.0
                 rPPG, _, _, _ = self.model(data, gra_sharp)
                 rPPG = (rPPG-torch.mean(rPPG, axis=-1).view(-1, 1))/torch.std(rPPG, axis=-1).view(-1, 1)    # normalize
-                loss_rPPG = self.criterion_Pearson(rPPG, label)
+                loss_rPPG = self.criterion_Pearson(rPPG, hr)
 
                 fre_loss = 0.0
                 kl_loss = 0.0
@@ -262,8 +264,10 @@ class PhysFormerTrainer(BaseTrainer):
         torch.save(self.model.state_dict(), model_path)
         print('Saved Model Path: ', model_path)
 
-    # HR calculation based on ground truth label
-    def get_hr(self, y, sr=30, min=30, max=180):
-        p, q = welch(y, sr, nfft=1e5/sr, nperseg=np.min((len(y)-1, 256)))
-        return p[(p>min/60)&(p<max/60)][np.argmax(q[(p>min/60)&(p<max/60)])]*60
+    # # HR calculation based on ground truth label
+    # def get_hr(self, y, sr=30, min=30, max=180):
+    #     p, q = welch(y, sr, nfft=1e5/sr, nperseg=np.min((len(y)-1, 256)))
+    #     return p[(p>min/60)&(p<max/60)][np.argmax(q[(p>min/60)&(p<max/60)])]*60
 
+    def get_hr_gt(self, name):
+        return self.hr_data[name]

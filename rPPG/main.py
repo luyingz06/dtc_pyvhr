@@ -1,32 +1,66 @@
-""" The main function of rPPG deep learning pipeline."""
+# """ The main function of rPPG deep learning pipeline."""
 
-import argparse
-import random
-import time
+# import argparse
+# import random
+# import time
 
-import numpy as np
-import torch
-from config import get_config
-from dataset import data_loader
-from neural_methods import trainer
-from unsupervised_methods.unsupervised_predictor import unsupervised_predict
-from torch.utils.data import DataLoader
+# import numpy as np
+# import torch
+# # from config import get_config
+# from dataset import data_loader
+# from neural_methods import trainer
+# # from unsupervised_methods.unsupervised_predictor import unsupervised_predict
+# from torch.utils.data import DataLoader
 
-RANDOM_SEED = 100
-torch.manual_seed(RANDOM_SEED)
-torch.cuda.manual_seed(RANDOM_SEED)
-np.random.seed(RANDOM_SEED)
-random.seed(RANDOM_SEED)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-# Create a general generator for use with the validation dataloader,
-# the test dataloader, and the unsupervised dataloader
-general_generator = torch.Generator()
-general_generator.manual_seed(RANDOM_SEED)
-# Create a training generator to isolate the train dataloader from
-# other dataloaders and better control non-deterministic behavior
-train_generator = torch.Generator()
-train_generator.manual_seed(RANDOM_SEED)
+# RANDOM_SEED = 100
+# torch.manual_seed(RANDOM_SEED)
+# torch.cuda.manual_seed(RANDOM_SEED)
+# np.random.seed(RANDOM_SEED)
+# random.seed(RANDOM_SEED)
+# torch.backends.cudnn.deterministic = True
+# torch.backends.cudnn.benchmark = False
+# # Create a general generator for use with the validation dataloader,
+# # the test dataloader, and the unsupervised dataloader
+# general_generator = torch.Generator()
+# general_generator.manual_seed(RANDOM_SEED)
+# # Create a training generator to isolate the train dataloader from
+# # other dataloaders and better control non-deterministic behavior
+# train_generator = torch.Generator()
+# train_generator.manual_seed(RANDOM_SEED)
+
+
+import h5py
+
+# Load the .h5 file
+file_path = 'preprocessed_data.h5'
+
+# Open the file in read mode
+with h5py.File(file_path, 'r') as f:
+    # List all datasets in the file
+    print("Datasets in the file:")
+    print(list(f.keys()))
+    
+    # Assuming the file contains two datasets: 'videos' and 'labels'
+    if 'videos' in f and 'labels' in f:
+        # Load the entire datasets (note: these are large, so consider reading in chunks if necessary)
+        videos = f['videos'][:]
+        labels = f['labels'][:]
+        
+        # Print the shape and type of the datasets
+        print(f"Videos shape: {videos.shape}")  # Shape of the video data (e.g., (num_samples, T, C, H, W))
+        print(f"Labels shape: {labels.shape}")  # Shape of the label data (e.g., (num_samples,))
+        print(f"First label: {labels[0]}")  # Print the first label value
+        print(f"First video shape: {videos[0].shape}")  # Shape of the first video (e.g., (T, C, H, W))
+        print(f"First frame of the first video: {videos[0][0]}")  # Print the first frame of the first video
+    else:
+        print("No 'videos' or 'labels' dataset found.")
+
+
+
+
+
+'''
+
 
 
 def seed_worker(worker_id):
@@ -38,8 +72,11 @@ def seed_worker(worker_id):
 def add_args(parser):
     """Adds arguments for parser."""
     parser.add_argument('--config_file', required=False,
-                        default="configs/train_configs/PURE_PURE_UBFC-rPPG_TSCAN_BASIC.yaml", type=str, help="The name of the model.")
-    '''Neural Method Sample YAML LIST:
+                        default="/home/luying/dtc_pyvhr/rPPG/configs/physformer.yaml", type=str, help="The name of the model.")
+    parser.add_argument('--videos_path', required=False, default="/home/luying/dtc_pyvhr/rPPG/videos", type=str, help="Path to the folder containing .avi files.")
+    parser.add_argument('--ground_truth_path', required=False, default="/home/luying/dtc_pyvhr/rPPG/train/DTC.csv", type=str, help="Path to the ground truth .csv file.")
+    """
+    Neural Method Sample YAML LIST:
       SCAMPS_SCAMPS_UBFC-rPPG_TSCAN_BASIC.yaml
       SCAMPS_SCAMPS_UBFC-rPPG_DEEPPHYS_BASIC.yaml
       SCAMPS_SCAMPS_UBFC-rPPG_PHYSNET_BASIC.yaml
@@ -57,7 +94,7 @@ def add_args(parser):
     Unsupervised Method Sample YAML LIST:
       PURE_UNSUPERVISED.yaml
       UBFC-rPPG_UNSUPERVISED.yaml
-    '''
+    """
     return parser
 
 
@@ -137,35 +174,40 @@ if __name__ == "__main__":
     parser = trainer.BaseTrainer.BaseTrainer.add_trainer_args(parser)
     parser = data_loader.BaseLoader.BaseLoader.add_data_loader_args(parser)
     args = parser.parse_args()
-
-    # configurations.
+    
+    # Ensure paths are valid
+    if not os.path.exists(args.videos_path):
+        raise ValueError(f"Videos path '{args.videos_path}' does not exist!")
+    if not os.path.exists(args.ground_truth_path):
+        raise ValueError(f"Ground truth path '{args.ground_truth_path}' does not exist!")
+    
+    # Load configurations
     config = get_config(args)
     print('Configuration:')
     print(config, end='\n\n')
+    
+    # update configuration path dynamically
+    config.TRAIN.DATA.DATA_PATH = args.videos_path
+    config.TRAIN.DATA.GROUND_TRUTH_PATH = args.ground_truth_path
 
     data_loader_dict = dict() # dictionary of data loaders 
+    
     if config.TOOLBOX_MODE == "train_and_test":
         # train_loader
-        if config.TRAIN.DATA.DATASET == "UBFC-rPPG":
-            train_loader = data_loader.UBFCrPPGLoader.UBFCrPPGLoader
-        elif config.TRAIN.DATA.DATASET == "PURE":
-            train_loader = data_loader.PURELoader.PURELoader
-        elif config.TRAIN.DATA.DATASET == "SCAMPS":
-            train_loader = data_loader.SCAMPSLoader.SCAMPSLoader
-        elif config.TRAIN.DATA.DATASET == "MMPD":
-            train_loader = data_loader.MMPDLoader.MMPDLoader
-        elif config.TRAIN.DATA.DATASET == "BP4DPlus":
-            train_loader = data_loader.BP4DPlusLoader.BP4DPlusLoader
-        elif config.TRAIN.DATA.DATASET == "BP4DPlusBigSmall":
-            train_loader = data_loader.BP4DPlusBigSmallLoader.BP4DPlusBigSmallLoader
-        elif config.TRAIN.DATA.DATASET == "UBFC-PHYS":
-            train_loader = data_loader.UBFCPHYSLoader.UBFCPHYSLoader
-        elif config.TRAIN.DATA.DATASET == "iBVP":
-            train_loader = data_loader.iBVPLoader.iBVPLoader
-        else:
-            raise ValueError("Unsupported dataset! Currently supporting UBFC-rPPG, PURE, MMPD, \
-                             SCAMPS, BP4D+ (Normal and BigSmall preprocessing), UBFC-PHYS and iBVP.")
-
+        train_loader = data_loader.UBFCrPPGLoader.UBFCrPPGLoader(
+            name="train",
+            data_path=config.TRAIN.DATA.DATA_PATH,
+            config_data=config.TRAIN.DATA
+        )
+        data_loader_dict['train'] = DataLoader(
+            dataset=train_loader,
+            num_workers=16,
+            batch_size=config.TRAIN.BATCH_SIZE,
+            shuffle=True,
+            worker_init_fn=seed_worker,
+            generator=train_generator
+        )
+        
         # Create and initialize the train dataloader given the correct toolbox mode,
         # a supported dataset name, and a valid dataset paths
         if (config.TRAIN.DATA.DATASET and config.TRAIN.DATA.DATA_PATH):
@@ -314,3 +356,4 @@ if __name__ == "__main__":
     else:
         print("TOOLBOX_MODE only support train_and_test or only_test !", end='\n\n')
 
+'''

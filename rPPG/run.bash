@@ -11,5 +11,6 @@ docker run --rm -it --gpus all \
   -v "/home/luying/dtc_pyvhr/rPPG/loss:/home/`whoami`/loss" \
   -v "/home/luying/dtc_pyvhr/rPPG/train:/home/`whoami`/train" \
   -v "/home/luying/dtc_pyvhr/rPPG/rppg_ros:/home/`whoami`/ws/src/rppg_ros" \
+  -v "/home/luying/dtc_pyvhr/rPPG/output:/home/`whoami`/videos" \
   dtc-jackal-$(hostname | tr '[:upper:]' '[:lower:]'):rppg \
   bash
