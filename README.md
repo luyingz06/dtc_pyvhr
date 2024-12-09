@@ -61,9 +61,9 @@ rostopic echo /heart_rate/model
 
 √ Test MTTS_CAN without preprocessing on the existing data and get comparison plots (Nov. 24th - Nov. 28th).
 
-Evaluate and train on PhysFormer network using existing data, build pipeline in Docker. (Dec. 2nd - Dec. 7th)
+Evaluate and train on PhysFormer network using existing data, build pipeline in Docker. (Dec. 2nd - ) (on lambda machine: dtc_pyvhr/rPPG)
 
-Train on new deep neural network models with image preprocess (Dec. 7th - Dec. 13th).
+Train on new deep neural network models with image preprocess.
 
 ## Visualization
 
